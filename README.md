@@ -28,24 +28,33 @@ Rendertron is compatible with all client side technologies, including [web compo
 
 ## Contents
 
-- [Middleware](#middleware)
-- [API](#api)
-  - [Render](#render)
-  - [Screenshot](#screenshot)
-  - [Invalidate cache](#invalidate-cache)
-- [FAQ](#faq)
-  - [Query parameters](#query-parameters)
-  - [Page render timing](#page-render-timing)
-  - [Rendering budget timeout](#rendering-budget-timeout)
-  - [Web components](#web-components)
-  - [Status codes](#status-codes)
-- [Installing & deploying](#installing--deploying)
-  - [Building](#building)
+- [Rendertron](#rendertron)
+      - [:hammer: Built with Puppeteer](#hammer-built-with-puppeteer)
+      - [:cloud: Easy deployment to Google Cloud](#cloud-easy-deployment-to-google-cloud)
+      - [:mag: Improves SEO](#mag-improves-seo)
+  - [Contents](#contents)
+  - [Middleware](#middleware)
+  - [API](#api)
+    - [Pdf](#pdf)
+    - [Render](#render)
+    - [Screenshot](#screenshot)
+    - [Invalidate cache](#invalidate-cache)
+  - [FAQ](#faq)
+    - [Query parameters](#query-parameters)
+    - [Page render timing](#page-render-timing)
+    - [Rendering budget timeout](#rendering-budget-timeout)
+    - [Web components](#web-components)
+    - [Status codes](#status-codes)
   - [Running locally](#running-locally)
-  - [Deploying to Google Cloud Platform](#deploying-to-google-cloud-platform)
-  - [Deploying using Docker](#deploying-using-docker)
-  - [Config](#config)
-  - [Troubleshooting](#troubleshooting)
+  - [Installing & deploying](#installing--deploying)
+    - [Building](#building)
+    - [Running locally](#running-locally-1)
+    - [Deploying to Google Cloud Platform](#deploying-to-google-cloud-platform)
+    - [Deploying using Docker](#deploying-using-docker)
+    - [Config](#config)
+      - [cacheConfig](#cacheconfig)
+        - [Example](#example)
+    - [Troubleshooting](#troubleshooting)
 
 ## Middleware
 
@@ -64,8 +73,19 @@ Note: the user agent lists differ there.
 
 ## API
 
+### Pdf
+```
+POST /pdf
+```
+The `pdf` endpoint will render your page to pdf. Options are
+specified as body parameters:
+ - url: target url to render
+ - width: optional, viewport width
+ - height: optional, viewport height
+ - mediaType: optional, whethor emulateMediaType('screen') before render
+ - options: optional, refers http://puppeteerjs.com/#?product=Puppeteer&version=v10.1.0&show=api-pagepdfoptions
+  
 ### Render
-
 ```
 GET /render/<url>
 ```
