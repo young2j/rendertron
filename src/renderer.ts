@@ -390,7 +390,7 @@ export class Renderer {
       throw new RenderPdfError('Forbidden');
     }
 
-    // Must be jpeg & binary format.
+    // puppeeter pdfOptions
     const pdfOptions: PDFOptions = {
       printBackground: options?.printBackground || true,
       format: options?.format || "a4",
