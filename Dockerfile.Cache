@@ -1,0 +1,33 @@
+FROM ubuntu:latest
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN sed -i s@/security.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN apt-get clean
+RUN apt-get update
+RUN apt-get install -y tzdata
+ENV TZ Asia/Shanghai
+RUN apt-get install -y gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 \
+    libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 \
+    libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 \
+    libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 \
+    libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation \
+    libappindicator1 libnss3 lsb-release xdg-utils wget libgbm-dev
+
+RUN apt-get install -y npm
+RUN npm config set registry https://registry.npm.taobao.org/
+RUN npm install -g n
+RUN export NODE_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/
+RUN n stable
+RUN npm install npm@latest -g
+RUN npm install pm2 -g
+RUN npm install yarn -g
+RUN yarn config set registry https://registry.npm.taobao.org/
+
+WORKDIR /app
+RUN apt install unzip
+RUN wget https://registry.npmmirror.com/-/binary/chromium-browser-snapshots/Linux_x64/1000022/chrome-linux.zip
+RUN unzip chrome-linux.zip
+RUN rm chrome-linux.zip
+ENV PUPPETEER_EXECUTABLE_PATH /app/chrome-linux/chrome
+ENV PUPPETEER_SKIP_DOWNLOAD true
+
+# docker build . -f Dockerfile.Cache -t swr.cn-north-4.myhuaweicloud.com/scana/scana-prerender:cache

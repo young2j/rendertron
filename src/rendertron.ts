@@ -8,7 +8,7 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import url from 'url';
 
-import { Renderer, ScreenshotError } from './renderer';
+import { Renderer, ScreenshotError, RenderPdfError } from './renderer';
 import { Config, ConfigManager } from './config';
 
 /**
@@ -103,6 +103,7 @@ export class Rendertron {
         this.handleScreenshotRequest.bind(this)
       )
     );
+    this.app.use(route.post('/pdf', this.handleRenderPdfRequest.bind(this)));
 
     return this.app.listen(+this.port, this.host, () => {
       console.log(`Listening on port ${this.port}`);
@@ -204,6 +205,40 @@ export class Rendertron {
       ctx.body = img;
     } catch (error) {
       const err = error as ScreenshotError;
+      ctx.status = err.type === 'Forbidden' ? 403 : 500;
+    }
+  }
+
+  async handleRenderPdfRequest(ctx: Koa.Context) {
+    if (!this.renderer) {
+      throw new Error('No renderer initalized yet.');
+    }
+  
+    const dimensions = {
+      width: Number(ctx.request.body['width']) || this.config.width,
+      height: Number(ctx.request.body['height']) || this.config.height,
+    };
+
+    const mobileVersion = 'mobile' in ctx.request.body ? true : false;
+
+    try {
+      const pdf = await this.renderer.renderPdf(
+        ctx.request.body.url,
+        mobileVersion,
+        dimensions,
+        ctx.request.body.options,
+        ctx.request.body.mediaType
+      );
+
+      for (const key in this.config.headers) {
+        ctx.set(key, this.config.headers[key]);
+      }
+
+      ctx.set('Content-Type', 'application/pdf');
+      ctx.set('Content-Length', pdf.length.toString());
+      ctx.body = pdf;
+    } catch (error) {
+      const err = error as RenderPdfError;
       ctx.status = err.type === 'Forbidden' ? 403 : 500;
     }
   }

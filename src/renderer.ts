@@ -1,4 +1,4 @@
-import puppeteer, { ScreenshotOptions } from 'puppeteer';
+import puppeteer, { ScreenshotOptions, PDFOptions } from 'puppeteer';
 import url from 'url';
 import { dirname } from 'path';
 
@@ -38,7 +38,10 @@ export class Renderer {
       return true;
     }
 
-    if (this.config.restrictedUrlPattern && requestUrl.match(new RegExp(this.config.restrictedUrlPattern))) {
+    if (
+      this.config.restrictedUrlPattern &&
+      requestUrl.match(new RegExp(this.config.restrictedUrlPattern))
+    ) {
       return true;
     }
 
@@ -108,7 +111,7 @@ export class Renderer {
     if (timezoneId) {
       try {
         await page.emulateTimezone(timezoneId);
-      } catch (e) {
+      } catch (e: any) {
         if (e.message.includes('Invalid timezone')) {
           return {
             status: 400,
@@ -265,7 +268,7 @@ export class Renderer {
 
     await page.setRequestInterception(true);
 
-    page.addListener('request', (interceptedRequest: puppeteer.HTTPRequest) => {
+    page.on('request', (interceptedRequest: puppeteer.HTTPRequest) => {
       if (this.restrictRequest(interceptedRequest.url())) {
         interceptedRequest.abort();
       } else {
@@ -321,11 +324,103 @@ export class Renderer {
     }
     return buffer;
   }
+
+  async renderPdf(
+    url: string,
+    isMobile: boolean,
+    dimensions: ViewportDimensions,
+    options?: PDFOptions,
+    mediaType?: string
+  ): Promise<Buffer> {
+    const page = await this.browser.newPage();
+
+    // Page may reload when setting isMobile
+    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+    await page.setViewport({
+      width: dimensions.width,
+      height: dimensions.height,
+      isMobile,
+    });
+
+    if (isMobile) {
+      page.setUserAgent(MOBILE_USERAGENT);
+    }
+
+    await page.setRequestInterception(true);
+
+    page.on('request', (interceptedRequest: puppeteer.HTTPRequest) => {
+      if (this.restrictRequest(interceptedRequest.url())) {
+        interceptedRequest.abort();
+      } else {
+        interceptedRequest.continue();
+      }
+    });
+
+    if (mediaType) {
+      await page.emulateMediaType(mediaType);
+    }
+
+    let response: puppeteer.HTTPResponse | null = null;
+
+    try {
+      // Navigate to page. Wait until there are no oustanding network requests.
+      response = await page.goto(url, {
+        timeout: this.config.timeout,
+        waitUntil: 'networkidle0',
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (!response) {
+      await page.close();
+      if (this.config.closeBrowser) {
+        await this.browser.close();
+      }
+      throw new RenderPdfError('NoResponse');
+    }
+
+    // Disable access to compute metadata. See
+    // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
+    if (response.headers()['metadata-flavor'] === 'Google') {
+      await page.close();
+      if (this.config.closeBrowser) {
+        await this.browser.close();
+      }
+      throw new RenderPdfError('Forbidden');
+    }
+
+    // Must be jpeg & binary format.
+    const pdfOptions: PDFOptions = {
+      printBackground: options?.printBackground || true,
+      format: options?.format || "a4",
+    }
+    // Screenshot returns a buffer based on specified encoding above.
+    // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
+    const buffer = (await page.pdf(pdfOptions)) as Buffer;
+    await page.close();
+    if (this.config.closeBrowser) {
+      await this.browser.close();
+    }
+    return buffer;
+  }
 }
 
 type ErrorType = 'Forbidden' | 'NoResponse';
 
 export class ScreenshotError extends Error {
+  type: ErrorType;
+
+  constructor(type: ErrorType) {
+    super(type);
+
+    this.name = this.constructor.name;
+
+    this.type = type;
+  }
+}
+
+export class RenderPdfError extends Error {
   type: ErrorType;
 
   constructor(type: ErrorType) {

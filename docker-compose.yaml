@@ -1,0 +1,43 @@
+version: '3.5'
+services:
+  dev:
+    image: swr.cn-north-4.myhuaweicloud.com/scana/scana-render-pdf:latest
+    container_name: scana-render-pdf
+    command: npm start
+    restart: always
+    privileged: true
+    ports:
+      - 9222:3000
+    network_mode: bridge
+    environment:
+      - TZ=Asia/Shanghai
+    sysctls:
+      net.core.somaxconn: 16384
+
+  test:
+    image: swr.cn-north-4.myhuaweicloud.com/scana/scana-render-pdf:latest
+    container_name: scana-render-pdf
+    command: npm start
+    restart: always
+    privileged: true
+    ports:
+      - 9222:3000
+    network_mode: bridge
+    environment:
+      - TZ=Asia/Shanghai
+    sysctls:
+      net.core.somaxconn: 16384
+
+  prod:
+    image: swr.cn-north-4.myhuaweicloud.com/scana/scana-render-pdf:latest
+    container_name: scana-render-pdf
+    command: npm start
+    restart: always
+    privileged: true
+    ports:
+      - 9222:3000
+    network_mode: bridge
+    environment:
+      - TZ=Asia/Shanghai
+    sysctls:
+      net.core.somaxconn: 16384
