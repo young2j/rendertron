@@ -396,7 +396,7 @@ export class Renderer {
       // format: options?.format || 'a4',
       margin: options?.margin || {},
       width: options?.width || '8.27in',
-      height: options?.height || '11.6in',
+      height: options?.height || '11.71in',
     };
     // Screenshot returns a buffer based on specified encoding above.
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
