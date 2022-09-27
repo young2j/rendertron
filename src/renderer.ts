@@ -393,8 +393,11 @@ export class Renderer {
     // puppeeter pdfOptions
     const pdfOptions: PDFOptions = {
       printBackground: options?.printBackground || true,
-      format: options?.format || "a4",
-    }
+      // format: options?.format || 'a4',
+      margin: options?.margin || {},
+      width: options?.width || '8.27in',
+      height: options?.height || '11.6in',
+    };
     // Screenshot returns a buffer based on specified encoding above.
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
     const buffer = (await page.pdf(pdfOptions)) as Buffer;
