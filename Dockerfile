@@ -8,6 +8,4 @@ COPY package.json /app/package.json
 RUN mkdir -p /usr/share/fonts/chinese/TrueType
 ADD font/ /usr/share/fonts/chinese/TrueType
 
-ENTRYPOINT [ "npm", "start" ]
-
 # docker build . --cache-from swr.cn-north-4.myhuaweicloud.com/scana/scana-prerender:cache -t swr.cn-north-4.myhuaweicloud.com/scana/scana-render-pdf:latest
