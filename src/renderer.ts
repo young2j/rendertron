@@ -366,7 +366,7 @@ export class Renderer {
       // Navigate to page. Wait until there are no oustanding network requests.
       response = await page.goto(url, {
         // timeout: this.config.timeout,
-        timeout: 120000,
+        timeout: 300000,
         waitUntil: 'networkidle0',
       });
     } catch (e) {
